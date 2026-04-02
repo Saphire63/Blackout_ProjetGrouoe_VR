@@ -4,8 +4,8 @@
 
 Avant de lancer le projet, importer ces packages dans Unity :
 
-- [ModularHousePack1](lien asset store)
-- [Furniture Mega Pack](lien asset store)
+- [ModularHousePack1](https://assetstore.unity.com/packages/3d/environments/urban/modular-house-pack-1-236466)
+- [Furniture Mega Pack](https://assetstore.unity.com/packages/3d/props/furniture/furniture-mega-pack-free-330002)
 
 ## Setup
 
