@@ -84,12 +84,6 @@ InitTestScene*.unity*
 /[Aa]ssets/StreamingAssets/aa*
 /[Aa]ssets/AddressableAssetsData/link.xml*
 /[Aa]ssets/Addressables_Temp*
-/[Aa]ssets/ModularHousePack1/
-/[Aa]ssets/ModularHousePack1.meta
-/[Aa]ssets/Furniture Mega Pack/
-/[Aa]ssets/Furniture Mega Pack.meta
-/[Aa]ssets/Awesome_Lamp_Collection/
-/[Aa]ssets/Awesome_Lamp_Collection.meta
 /[Aa]ssets/UnityTechnologies/
 /[Aa]ssets/UnityTechnologies.meta
 # By default, Addressables content builds will generate addressables_content_state.bin
