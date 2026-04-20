@@ -3,23 +3,37 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class KeyItem : MonoBehaviour
 {
-    public AudioSource audioS;
+    [Header("Effets")]
+    public AudioSource audioSource;
     public AudioClip pickupSound;
-    private bool picked = false;
 
-    public bool IsPickedUp() => picked;
+    private bool isPickedUp = false;
 
-    // FONCTION À LIER DANS L'INSPECTEUR (Select Entered)
-    public void OnGrabbed()
+    // Cette fonction sera appelée quand tu cliques sur la clé
+    public void RecupererCle()
     {
-        if (picked) return;
-        picked = true;
+        if (isPickedUp) return;
+        isPickedUp = true;
 
-        if (audioS && pickupSound) audioS.PlayOneShot(pickupSound);
+        // 1. Jouer le son
+        if (audioSource && pickupSound)
+            audioSource.PlayOneShot(pickupSound);
 
-        GameManager.Instance.SetState(GameState.HasKey);
-        GameManager.Instance.dialogueSystem.ShowDialogue("C'est bon, j'ai la clé de la cave !", 3f, null);
+        // 2. Changer l'état du jeu pour débloquer la porte
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.SetState(GameState.HasKey);
+        }
+
+        // 3. Faire disparaître la clé immédiatement
+        gameObject.SetActive(false);
         
-        this.gameObject.SetActive(false); // Elle disparait
+        Debug.Log("Clé récupérée avec succès !");
+    }
+
+    // Garder cette fonction pour la compatibilité avec la porte
+    public bool IsPickedUp()
+    {
+        return isPickedUp;
     }
 }
