@@ -8,89 +8,54 @@ public class DialogueSystem : MonoBehaviour
     public TextMeshProUGUI dialogueText;
     public CanvasGroup canvasGroup;
 
-    [Header("Paramètres")]
-    public float distanceFromCamera = 2f;    // distance devant les yeux
-    public float verticalOffset = -0.5f;     // position en bas du champ de vision
+    [Header("Paramètres VR")]
+    public float distanceFromCamera = 2.2f;
+    public float verticalOffset = -0.4f;
     public float fadeSpeed = 2f;
-    public float typewriterSpeed = 0.04f;    // secondes entre chaque caractère
 
     private Camera vrCamera;
-    private Coroutine currentDialogue;
     private bool isShowing = false;
 
     void Start()
     {
         vrCamera = Camera.main;
         canvasGroup.alpha = 0f;
-        dialogueText.text = "";
-
-        // Le canvas doit être en World Space
-        GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
-        transform.localScale = Vector3.one * 0.002f; // échelle adaptée au World Space
+        
+        // On s'assure que le canvas est bien configuré pour la VR
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas != null) canvas.renderMode = RenderMode.WorldSpace;
     }
 
     void LateUpdate()
     {
-        if (!isShowing) return;
+        if (!isShowing || vrCamera == null) return;
 
-        // Suivre la caméra VR
+        // Le texte reste collé à ton regard (comme avant)
         Transform cam = vrCamera.transform;
-        transform.position = cam.position
-            + cam.forward * distanceFromCamera
-            + cam.up * verticalOffset;
+        transform.position = cam.position + cam.forward * distanceFromCamera + cam.up * verticalOffset;
         transform.rotation = cam.rotation;
     }
 
     public void ShowDialogue(string text, float duration, System.Action onComplete)
     {
-        if (currentDialogue != null) StopCoroutine(currentDialogue);
-        currentDialogue = StartCoroutine(DialogueRoutine(text, duration, onComplete));
+        StopAllCoroutines();
+        StartCoroutine(DialogueRoutine(text, duration, onComplete));
     }
 
     IEnumerator DialogueRoutine(string text, float duration, System.Action onComplete)
     {
         isShowing = true;
+        dialogueText.text = text;
 
-        // Fade in
-        yield return StartCoroutine(Fade(0f, 1f));
+        // Fade In
+        while (canvasGroup.alpha < 1f) { canvasGroup.alpha += Time.deltaTime * fadeSpeed; yield return null; }
 
-        // Effet typewriter
-        dialogueText.text = "";
-        foreach (char c in text)
-        {
-            dialogueText.text += c;
-            yield return new WaitForSeconds(typewriterSpeed);
-        }
-
-        // Attendre la durée
         yield return new WaitForSeconds(duration);
 
-        // Fade out
-        yield return StartCoroutine(Fade(1f, 0f));
+        // Fade Out
+        while (canvasGroup.alpha > 0f) { canvasGroup.alpha -= Time.deltaTime * fadeSpeed; yield return null; }
 
-        dialogueText.text = "";
         isShowing = false;
-
         onComplete?.Invoke();
-    }
-
-    IEnumerator Fade(float from, float to)
-    {
-        float t = 0f;
-        while (t < 1f)
-        {
-            t += Time.deltaTime * fadeSpeed;
-            canvasGroup.alpha = Mathf.Lerp(from, to, t);
-            yield return null;
-        }
-        canvasGroup.alpha = to;
-    }
-
-    public void ClearDialogue()
-    {
-        if (currentDialogue != null) StopCoroutine(currentDialogue);
-        canvasGroup.alpha = 0f;
-        dialogueText.text = "";
-        isShowing = false;
     }
 }

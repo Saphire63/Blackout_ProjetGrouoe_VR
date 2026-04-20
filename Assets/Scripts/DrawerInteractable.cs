@@ -109,22 +109,19 @@ public class DrawerInteractable : MonoBehaviour
         StartCoroutine(SlideRoutine(closedLocalPos, null));
     }   
 
-    void RevealItem()
+   void RevealItem()
     {
         if (hiddenItem == null) return;
 
         hiddenItem.SetActive(true);
 
-        // Activer la surbrillance sur l'item révélé
-        var outline = hiddenItem.GetComponent<OutlineController>();
-        if (outline != null) outline.SetOutline(true);
+        // DÉSACTIVE L'INTERACTION DU TIROIR POUR LAISSER LA CLÉ LIBRE
+        var drawerInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
+        if (drawerInteractable != null) drawerInteractable.enabled = false;
 
-        // Si c'est la clé, notifier le GameManager qu'elle est disponible
-        // (le joueur doit encore la ramasser avec le ray)
         var key = hiddenItem.GetComponent<KeyItem>();
         if (key != null)
-            GameManager.Instance.dialogueSystem.ShowDialogue(
-                "La voilà !", 2f, null);
+            GameManager.Instance.dialogueSystem.ShowDialogue("La voilà !", 2f, null);
     }
 
     IEnumerator SlideRoutine(Vector3 targetPos, System.Action onComplete)

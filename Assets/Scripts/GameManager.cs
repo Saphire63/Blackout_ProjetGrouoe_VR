@@ -21,7 +21,9 @@ public class GameManager : MonoBehaviour
     [Header("Références")]
     public DialogueSystem dialogueSystem;
     public PowerOutage powerOutage;
-    public GameObject[] interactableObjects; // tous les objets interactables de la scène
+    
+    // On garde la liste mais on n'utilisera plus d'Outline dessus
+    public GameObject[] interactableObjects; 
 
     public GameState currentState { get; private set; }
 
@@ -47,32 +49,19 @@ public class GameManager : MonoBehaviour
         switch (state)
         {
             case GameState.Intro:
-                dialogueSystem.ShowDialogue("Enfin chez moi... J'ai qu'une envie, m'installer et regarder un film.", 4f, () => {
-                    // Le joueur entre dans la maison et allume la lumière
-                    // Le trigger PowerOutage sera déclenché par le switch de lumière
-                });
+                dialogueSystem.ShowDialogue("Enfin chez moi... J'ai qu'une envie, m'installer et regarder un film.", 4f, null);
+                break;
+
+            case GameState.PowerOn:
+                // État temporaire quand on allume l'interrupteur
                 break;
 
             case GameState.PowerOutage:
-                dialogueSystem.ShowDialogue("Quoi ?! Encore une coupure...", 3f, () => {
-                    SetState(GameState.CandleLit); // après avoir trouvé la bougie
-                });
-                break;
-
-            case GameState.CandleLit:
-                dialogueSystem.ShowDialogue("Il faut que j'aille rétablir le courant à la cave.", 3f, () =>
-                {
-                    EnableInteractables(true);
-                });
+                // Le texte est maintenant géré directement par le PowerOutage ou ici
                 break;
 
             case GameState.SearchingKeyRDC:
-                dialogueSystem.ShowDialogue("La porte est fermée à clé... Où est-ce que je l'ai mise ?", 3f, null);
-                // Après avoir cherché la moitié du RDC, un trigger géographique lance la ligne suivante
-                break;
-
-            case GameState.SearchingKeyUpstairs:
-                dialogueSystem.ShowDialogue("Attends... je crois que je l'ai laissée au premier étage.", 3f, null);
+                dialogueSystem.ShowDialogue("C'est verrouillé... il me faut la clé de la cave. Elle doit être dans un tiroir.", 4f, null);
                 break;
 
             case GameState.HasKey:
@@ -84,27 +73,21 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.PowerRestored:
-                powerOutage.RestorePower();
                 dialogueSystem.ShowDialogue("Voilà ! La lumière est de retour.", 3f, () => {
                     SetState(GameState.Epilogue);
                 });
                 break;
 
             case GameState.Epilogue:
-                dialogueSystem.ShowDialogue("Bien. Maintenant, ce film que j'attends depuis ce matin...", 4f, null);
+                dialogueSystem.ShowDialogue("Bien. Maintenant, mon film...", 4f, null);
                 break;
         }
     }
 
+    // FONCTION CORRIGÉE : On a enlevé l'OutlineController qui causait l'erreur
     public void EnableInteractables(bool enable)
     {
-        foreach (var obj in interactableObjects)
-        {
-            if (obj != null)
-            {
-                var outline = obj.GetComponent<OutlineController>();
-                if (outline != null) outline.SetOutline(enable);
-            }
-        }
+        // On laisse cette fonction vide pour l'instant pour éviter les erreurs
+        // Tu pourras rajouter un autre système de surbrillance plus tard
     }
 }

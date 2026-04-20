@@ -4,146 +4,74 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class DoorInteractable : MonoBehaviour
 {
-    [Header("Pivot de rotation")]
-    [Tooltip("Le GameObject côté charnières — c'est lui qui tourne, pas le mesh direct.")]
+    [Header("Configuration Porte")]
     public Transform doorPivot;
- 
-    [Header("Ouverture")]
     public float openAngle = 90f;
-    [Range(0.5f, 5f)]
-    public float openSpeed = 2.5f;
- 
-    [Header("Audio")]
-    public AudioSource audioSource;
-    public AudioClip openSound;
-    public AudioClip closeSound;
-    public AudioClip lockedSound;
- 
+    public float smoothTime = 2f;
+    
     [Header("Verrouillage")]
-    public bool isLocked = false;
- 
-    [Header("Dialogue contextuel")]
-    [Tooltip("Cocher si c'est la porte d'entrée principale")]
-    public bool isEntranceDoor = false;
- 
-    // ─── Privé ──────────────────────────────────────────────
+    public bool isLocked = true; // Coché par défaut pour la cave
+    public AudioSource audioSource;
+    public AudioClip lockedSound;
+    public AudioClip openSound;
+
     private bool isOpen = false;
-    private bool isAnimating = false;
-    private float currentAngle = 0f;
-    private float cachedOpenDirection = 1f;
- 
-    private UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable interactable;
-    private Transform playerCamera;
- 
-    void Awake()
+    private Quaternion closedRotation;
+    private Quaternion openRotation;
+    private Coroutine moveCoroutine;
+
+    void Start()
     {
-        interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
-        if (interactable == null)
-            interactable = gameObject.AddComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
- 
-        interactable.selectEntered.AddListener(OnRaySelect);
-        interactable.hoverEntered.AddListener(OnHoverEnter);
-        interactable.hoverExited.AddListener(OnHoverExit);
- 
-        playerCamera = Camera.main?.transform;
+        if (doorPivot == null) doorPivot = transform;
+        closedRotation = doorPivot.localRotation;
+        openRotation = Quaternion.Euler(doorPivot.localEulerAngles + new Vector3(0, openAngle, 0));
+
+        // Configuration de l'interactable
+        var interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
+        if (interactable != null)
+        {
+            // On lie l'interaction à la fonction OnInteract (qui existe juste en dessous)
+            interactable.selectEntered.AddListener(OnInteract);
+        }
     }
- 
-    // ─── Events Ray Interactor ───────────────────────────────
- 
-    void OnRaySelect(SelectEnterEventArgs args)
+
+    // C'EST CETTE FONCTION QUE UNITY NE TROUVAIT PAS (OnRaySelect n'existe plus)
+    private void OnInteract(SelectEnterEventArgs args)
     {
-        if (isAnimating) return;
- 
         if (isLocked)
         {
-            PlaySound(lockedSound);
-            return;
+            if (audioSource && lockedSound) audioSource.PlayOneShot(lockedSound);
+            
+            // On affiche le dialogue via le GameManager
+            if (GameManager.Instance != null && GameManager.Instance.dialogueSystem != null)
+            {
+                GameManager.Instance.dialogueSystem.ShowDialogue("C'est fermé à clé... Je devrais examiner la serrure.", 3f, null);
+            }
         }
- 
-        if (isOpen) CloseDoor();
-        else OpenDoor();
-    }
- 
-    void OnHoverEnter(HoverEnterEventArgs args)
-    {
-        // Surbrillance au hover du rayon
-        var outline = GetComponentInParent<OutlineController>();
-        outline?.OnHoverEnter();
-    }
- 
-    void OnHoverExit(HoverExitEventArgs args)
-    {
-        var outline = GetComponentInParent<OutlineController>();
-        outline?.OnHoverExit();
-    }
- 
-    // ─── Ouverture / Fermeture ───────────────────────────────
- 
-    public void OpenDoor()
-    {
-        if (isOpen || isAnimating || doorPivot == null) return;
-        isOpen = true;
- 
-        // Détecter de quel côté est le joueur pour ouvrir vers lui
-        if (playerCamera != null)
+        else
         {
-            Vector3 toPlayer = playerCamera.position - doorPivot.position;
-            float dot = Vector3.Dot(doorPivot.right, toPlayer);
-            cachedOpenDirection = dot >= 0f ? 1f : -1f;
-        }
- 
-        PlaySound(openSound);
-        StartCoroutine(RotateDoor(openAngle * cachedOpenDirection));
- 
-        // Dialogue si c'est la porte d'entrée
-        if (isEntranceDoor)
-        {
-            GameManager.Instance.dialogueSystem.ShowDialogue(
-                "Il fait sombre ici... L'interrupteur doit être à droite.", 4f, null);
+            if (audioSource && openSound) audioSource.PlayOneShot(openSound);
+            ToggleDoor();
         }
     }
- 
-    public void CloseDoor()
+
+    public void ToggleDoor()
     {
-        if (!isOpen || isAnimating || doorPivot == null) return;
-        isOpen = false;
- 
-        PlaySound(closeSound);
-        StartCoroutine(RotateDoor(0f));
+        if (moveCoroutine != null) StopCoroutine(moveCoroutine);
+        isOpen = !isOpen;
+        moveCoroutine = StartCoroutine(MoveDoor(isOpen ? openRotation : closedRotation));
     }
- 
-    IEnumerator RotateDoor(float targetAngle)
+
+    IEnumerator MoveDoor(Quaternion targetRotation)
     {
-        isAnimating = true;
-        float startAngle = currentAngle;
-        float t = 0f;
- 
-        while (t < 1f)
+        float elapsed = 0;
+        Quaternion startRotation = doorPivot.localRotation;
+        while (elapsed < 1f)
         {
-            t += Time.deltaTime * openSpeed;
-            currentAngle = Mathf.Lerp(startAngle, targetAngle, EaseInOut(t));
-            doorPivot.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
+            doorPivot.localRotation = Quaternion.Slerp(startRotation, targetRotation, elapsed);
+            elapsed += Time.deltaTime * smoothTime;
             yield return null;
         }
- 
-        currentAngle = targetAngle;
-        doorPivot.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
-        isAnimating = false;
+        doorPivot.localRotation = targetRotation;
     }
- 
-    float EaseInOut(float t)
-    {
-        t = Mathf.Clamp01(t);
-        return t < 0.5f ? 2f * t * t : -1f + (4f - 2f * t) * t;
-    }
- 
-    void PlaySound(AudioClip clip)
-    {
-        if (audioSource && clip) audioSource.PlayOneShot(clip);
-    }
- 
-    // ─── API publique ────────────────────────────────────────
-    public void SetLocked(bool locked) => isLocked = locked;
-    public bool IsOpen() => isOpen;
-    public bool IsLocked() => isLocked;
 }
