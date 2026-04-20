@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 629052d31dd7f193e975651bf138f301
+timeCreated: 1484171296
+licenseType: Pro
+TextScriptImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 127325
+  packageName: Particle Pack
+  packageVersion: 3.1
+  assetPath: Assets/UnityTechnologies/ParticlePack/TextMesh Pro/Fonts/LiberationSans
+    - OFL.txt
+  uploadId: 691001

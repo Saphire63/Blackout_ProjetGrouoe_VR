@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 6e5093a6dcd12e6fa8a53c1aefdaeac9
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 127325
+  packageName: Particle Pack
+  packageVersion: 3.1
+  assetPath: Assets/UnityTechnologies/ParticlePack/TextMesh Pro/Shaders/TMP_SDF-Mobile
+    Masking.shader
+  uploadId: 691001
