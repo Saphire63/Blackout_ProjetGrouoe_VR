@@ -3,19 +3,23 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class KeyItem : MonoBehaviour
 {
-    public AudioSource audioSource;
+    public AudioSource audioS;
     public AudioClip pickupSound;
-    private bool isPickedUp = false;
+    private bool picked = false;
 
-    public bool IsPickedUp() => isPickedUp;
+    public bool IsPickedUp() => picked;
 
-    public void PickUp()
+    // FONCTION À LIER DANS L'INSPECTEUR (Select Entered)
+    public void OnGrabbed()
     {
-        if (isPickedUp) return;
-        isPickedUp = true;
-        if (audioSource && pickupSound) audioSource.PlayOneShot(pickupSound);
+        if (picked) return;
+        picked = true;
+
+        if (audioS && pickupSound) audioS.PlayOneShot(pickupSound);
+
         GameManager.Instance.SetState(GameState.HasKey);
-        GetComponent<MeshRenderer>().enabled = false;
-        if(GetComponent<Collider>()) GetComponent<Collider>().enabled = false;
+        GameManager.Instance.dialogueSystem.ShowDialogue("C'est bon, j'ai la clé de la cave !", 3f, null);
+        
+        this.gameObject.SetActive(false); // Elle disparait
     }
 }

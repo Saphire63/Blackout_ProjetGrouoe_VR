@@ -30,10 +30,9 @@ public class DialogueSystem : MonoBehaviour
     {
         if (!isShowing || vrCamera == null) return;
 
-        // Le texte reste collé à ton regard (comme avant)
-        Transform cam = vrCamera.transform;
-        transform.position = cam.position + cam.forward * distanceFromCamera + cam.up * verticalOffset;
-        transform.rotation = cam.rotation;
+        // Le texte suit exactement la rotation et position de ta tête
+        transform.position = vrCamera.transform.position + vrCamera.transform.forward * 2.2f + vrCamera.transform.up * -0.4f;
+        transform.rotation = vrCamera.transform.rotation;
     }
 
     public void ShowDialogue(string text, float duration, System.Action onComplete)
