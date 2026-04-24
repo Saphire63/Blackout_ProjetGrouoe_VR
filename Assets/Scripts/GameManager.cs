@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public enum GameState
@@ -21,9 +22,7 @@ public class GameManager : MonoBehaviour
     [Header("Références")]
     public DialogueSystem dialogueSystem;
     public PowerOutage powerOutage;
-    
-    // On garde la liste mais on n'utilisera plus d'Outline dessus
-    public GameObject[] interactableObjects; 
+    public GameObject[] interactableObjects;
 
     public GameState currentState { get; private set; }
 
@@ -49,30 +48,52 @@ public class GameManager : MonoBehaviour
         switch (state)
         {
             case GameState.Intro:
-                dialogueSystem.ShowDialogue("Enfin chez moi... J'ai qu'une envie, m'installer et regarder un film.", 4f, null);
+                dialogueSystem.ShowDialogue(
+                    "Enfin chez moi... J'ai qu'une envie, m'installer et regarder un film.", 4f, null);
                 break;
 
             case GameState.PowerOn:
-                // État temporaire quand on allume l'interrupteur
                 break;
 
             case GameState.PowerOutage:
-                // Le texte est maintenant géré directement par le PowerOutage ou ici
+                EnableInteractables(true);  // ← bougie en surbrillance dès le noir
+                dialogueSystem.ShowDialogue("Quoi ?! Encore une coupure...", 3f, () => {
+                    StartCoroutine(DelayedDialogue(
+                        "Il me semblait avoir mis une bougie quelque part...", 2f, null));
+                });
+                break;
+
+            case GameState.CandleLit:
+                dialogueSystem.ShowDialogue(
+                    "Il faut que j'aille rétablir le courant à la cave.", 3f, () => {
+                        EnableInteractables(true);  
+                        StartCoroutine(DelayedDialogue(
+                            "L'accès à la cave se fait par la cuisine.", 3f, null));
+                    });
                 break;
 
             case GameState.SearchingKeyRDC:
-                dialogueSystem.ShowDialogue("C'est verrouillé... il me faut la clé de la cave. Elle doit être dans un tiroir.", 4f, null);
+                dialogueSystem.ShowDialogue(
+                    "C'est fermé à clé... il me faut la clé du sous-sol.", 3f, null);
+                break;
+
+            case GameState.SearchingKeyUpstairs:
+                dialogueSystem.ShowDialogue(
+                    "Attends... je crois que je l'ai laissée au premier étage.", 3f, null);
                 break;
 
             case GameState.HasKey:
-                dialogueSystem.ShowDialogue("La voilà ! Maintenant je peux ouvrir la porte de la cave.", 3f, null);
+                dialogueSystem.ShowDialogue(
+                    "Maintenant je peux ouvrir la porte de la cave.", 3f, null);
                 break;
 
             case GameState.BasementOpen:
-                dialogueSystem.ShowDialogue("Le tableau électrique doit être par ici...", 3f, null);
+                dialogueSystem.ShowDialogue(
+                    "Le tableau électrique doit être par ici...", 3f, null);
                 break;
 
             case GameState.PowerRestored:
+                powerOutage.RestorePower();
                 dialogueSystem.ShowDialogue("Voilà ! La lumière est de retour.", 3f, () => {
                     SetState(GameState.Epilogue);
                 });
@@ -84,10 +105,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // FONCTION CORRIGÉE : On a enlevé l'OutlineController qui causait l'erreur
+    public IEnumerator DelayedDialogue(string text, float delay, System.Action onComplete)
+    {
+        yield return new WaitForSeconds(delay);
+        dialogueSystem.ShowDialogue(text, 3f, onComplete);
+    }
+
     public void EnableInteractables(bool enable)
     {
-        // On laisse cette fonction vide pour l'instant pour éviter les erreurs
-        // Tu pourras rajouter un autre système de surbrillance plus tard
+        foreach (var obj in interactableObjects)
+        {
+            if (obj != null)
+            {
+                var outline = obj.GetComponent<OutlineController>();
+                if (outline != null) outline.SetOutline(enable);
+            }
+        }
     }
 }

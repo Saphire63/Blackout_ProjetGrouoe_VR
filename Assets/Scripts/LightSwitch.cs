@@ -9,13 +9,16 @@ public class LightSwitch : MonoBehaviour
     void Awake()
     {
         var interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
-        interactable.selectEntered.AddListener(OnSwitchFlip);
+        if (interactable != null)
+            interactable.selectEntered.AddListener(OnSwitchFlip);
     }
 
-    void OnSwitchFlip(UnityEngine.XR.Interaction.Toolkit.SelectEnterEventArgs args)
+    void OnSwitchFlip(SelectEnterEventArgs args)
     {
         if (hasBeenUsed || powerOutage == null) return;
         hasBeenUsed = true;
-        powerOutage.TriggerOutage();
+        // Allume brièvement puis déclenche la coupure
+        powerOutage.TurnOnThenOutage();
+        GameManager.Instance.SetState(GameState.PowerOn);
     }
 }

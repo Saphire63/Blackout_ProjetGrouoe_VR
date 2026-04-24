@@ -3,59 +3,148 @@ using UnityEngine;
 
 public class PowerOutage : MonoBehaviour
 {
-    [Header("Lumières")]
-    public Light[] houseLights; 
+    [Header("Lumières de la maison")]
+    public Light[] houseLights;
+    public Light lightningLight;
+    public float normalIntensity = 1f;
 
-    [Header("Sons d'ambiance")]
-    public AudioSource audioSource; // L'AudioSource sur cet objet
-    public AudioClip thunderClip;  // Le son du tonnerre (un coup)
-    public AudioClip rainClip;     // Le son de la pluie (en boucle)
+    [Header("Audio")]
+    public AudioSource audioSource;
+    public AudioClip thunderClap;
+    public AudioClip rainAmbience;
+
+    [Header("Délai avant coupure")]
+    public float delayBeforeOutage = 3.5f;
+
+    private bool powerIsOn = false; // false au départ — lumières éteintes
+
+    void Start()
+    {
+        // Lumières éteintes dès le lancement
+        if (lightningLight) lightningLight.intensity = 0f;
+        SetHouseLights(false);
+    }
 
     public void TriggerOutage()
     {
-        StartCoroutine(OutageRoutine());
+        if (powerIsOn) StartCoroutine(OutageSequence());
     }
 
-    IEnumerator OutageRoutine()
+    // Appelé par LightSwitch quand le joueur allume l'interrupteur
+    public void TurnOnThenOutage()
     {
-        // 1. On allume tout au début pendant 1 seconde
-        SetLights(true);
-        yield return new WaitForSeconds(1.0f);
+        StartCoroutine(TurnOnThenOutageSequence());
+    }
 
-        // 2. LA COUPURE
-        SetLights(false);
+    IEnumerator TurnOnThenOutageSequence()
+    {
+        // Allumer brièvement
+        SetHouseLights(true);
+        powerIsOn = true;
+        yield return new WaitForSeconds(delayBeforeOutage);
 
-        // 3. LE TONNERRE (Le gros "Boom")
-        if (audioSource != null && thunderClip != null)
+        // Lancer la pluie
+        if (audioSource != null && rainAmbience != null)
         {
-            audioSource.PlayOneShot(thunderClip);
-        }
-
-        // 4. LA PLUIE (On change le son de l'AudioSource pour mettre la pluie en boucle)
-        if (audioSource != null && rainClip != null)
-        {
-            audioSource.clip = rainClip;
-            audioSource.loop = true; // Pour que la pluie ne s'arrête jamais
+            audioSource.clip = rainAmbience;
+            audioSource.loop = true;
             audioSource.Play();
         }
 
-        // 5. CHANGEMENT D'ÉTAT ET DIALOGUE
+        // Éclairs
+        yield return StartCoroutine(LightningFlash(3));
+
+        // Coupure
+        SetHouseLights(false);
+        powerIsOn = false;
+
+        // Tonnerre
+        if (audioSource != null && thunderClap != null)
+            audioSource.PlayOneShot(thunderClap, 1f);
+
+        // Notifier GameManager
         GameManager.Instance.SetState(GameState.PowerOutage);
-        GameManager.Instance.dialogueSystem.ShowDialogue("Mince, le courant ! Je dois trouver une bougie.", 5f, null);
     }
 
-    void SetLights(bool state)
+    IEnumerator OutageSequence()
     {
-        foreach (Light l in houseLights)
+        if (audioSource != null && rainAmbience != null)
         {
-            if (l != null) l.enabled = state;
+            audioSource.clip = rainAmbience;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+
+        yield return new WaitForSeconds(delayBeforeOutage);
+        yield return StartCoroutine(LightningFlash(3));
+
+        SetHouseLights(false);
+        powerIsOn = false;
+
+        if (audioSource != null && thunderClap != null)
+            audioSource.PlayOneShot(thunderClap, 1f);
+
+        GameManager.Instance.SetState(GameState.PowerOutage);
+    }
+
+    IEnumerator LightningFlash(int flashCount)
+    {
+        for (int i = 0; i < flashCount; i++)
+        {
+            SetHouseLightsIntensity(Random.Range(0.1f, 0.5f));
+            if (lightningLight) lightningLight.intensity = Random.Range(2f, 5f);
+            yield return new WaitForSeconds(Random.Range(0.05f, 0.15f));
+
+            SetHouseLightsIntensity(normalIntensity);
+            if (lightningLight) lightningLight.intensity = 0f;
+            yield return new WaitForSeconds(Random.Range(0.05f, 0.2f));
         }
     }
 
-    // Fonction pour rallumer à la fin du jeu
     public void RestorePower()
     {
-        SetLights(true);
-        if (audioSource != null) audioSource.Stop(); // On arrête la pluie
+        StartCoroutine(PowerRestoreSequence());
+    }
+
+    IEnumerator PowerRestoreSequence()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            SetHouseLights(true);
+            SetHouseLightsIntensity(Random.Range(0.3f, 0.8f));
+            yield return new WaitForSeconds(Random.Range(0.1f, 0.3f));
+            SetHouseLights(false);
+            yield return new WaitForSeconds(Random.Range(0.1f, 0.2f));
+        }
+
+        SetHouseLights(true);
+        SetHouseLightsIntensity(normalIntensity);
+        powerIsOn = true;
+
+        // Arrêter la pluie
+        if (audioSource != null)
+        {
+            float t = 0;
+            while (t < 1f)
+            {
+                t += Time.deltaTime * 0.5f;
+                audioSource.volume = Mathf.Lerp(1f, 0f, t);
+                yield return null;
+            }
+            audioSource.Stop();
+            audioSource.volume = 1f;
+        }
+    }
+
+    void SetHouseLights(bool on)
+    {
+        foreach (var l in houseLights)
+            if (l != null) l.enabled = on;
+    }
+
+    void SetHouseLightsIntensity(float intensity)
+    {
+        foreach (var l in houseLights)
+            if (l != null) l.intensity = intensity;
     }
 }
