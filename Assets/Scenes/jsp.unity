@@ -10732,6 +10732,7 @@ MonoBehaviour:
   pulseSpeed: 1.5
   minAlpha: 0.3
   maxAlpha: 1
+  outlineEnabled: 0
 --- !u!114 &328538006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10748,6 +10749,7 @@ MonoBehaviour:
   pulseSpeed: 1.5
   minAlpha: 0.3
   maxAlpha: 1
+  outlineEnabled: 0
 --- !u!114 &328538007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10764,6 +10766,7 @@ MonoBehaviour:
   pulseSpeed: 1.5
   minAlpha: 0.3
   maxAlpha: 1
+  outlineEnabled: 0
 --- !u!1 &328694104
 GameObject:
   m_ObjectHideFlags: 0
@@ -11152,6 +11155,7 @@ MonoBehaviour:
   pulseSpeed: 1.5
   minAlpha: 0.3
   maxAlpha: 1
+  outlineEnabled: 0
 --- !u!114 &342972825
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17227,6 +17231,7 @@ MonoBehaviour:
   pulseSpeed: 1.5
   minAlpha: 0.3
   maxAlpha: 1
+  outlineEnabled: 0
 --- !u!114 &483831000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54572,6 +54577,7 @@ MonoBehaviour:
   pulseSpeed: 1.5
   minAlpha: 0.3
   maxAlpha: 1
+  outlineEnabled: 0
 --- !u!114 &1525062230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54588,6 +54594,7 @@ MonoBehaviour:
   pulseSpeed: 1.5
   minAlpha: 0.3
   maxAlpha: 1
+  outlineEnabled: 0
 --- !u!64 &1525062231
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -54626,6 +54633,7 @@ MonoBehaviour:
   pulseSpeed: 1.5
   minAlpha: 0.3
   maxAlpha: 1
+  outlineEnabled: 0
 --- !u!21 &1526634351
 Material:
   serializedVersion: 8
@@ -57934,7 +57942,7 @@ MonoBehaviour:
   audioSource: {fileID: 879398763}
   thunderClap: {fileID: 8300000, guid: 8944b49cceefc6c458f39994b6c8c22c, type: 3}
   rainAmbience: {fileID: 8300000, guid: 8bd9e04846861bc438320240beb247a2, type: 3}
-  delayBeforeOutage: 3.5
+  delayBeforeOutage: 2.5
 --- !u!4 &1666190703
 Transform:
   m_ObjectHideFlags: 0
@@ -60868,6 +60876,7 @@ MonoBehaviour:
   pulseSpeed: 1.5
   minAlpha: 0.3
   maxAlpha: 1
+  outlineEnabled: 1
 --- !u!1 &1771815569 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8417305752237895405, guid: 32286ae5907ae704cb886c41a8c0ddfb, type: 3}

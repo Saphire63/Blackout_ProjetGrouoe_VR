@@ -2,9 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// OutlineController optimisé — cache les matériaux, mutualise le pulse via un manager statique.
-/// </summary>
 public class OutlineController : MonoBehaviour
 {
     [Header("Paramètres d'outline")]
@@ -13,13 +10,13 @@ public class OutlineController : MonoBehaviour
     public float minAlpha = 0.3f;
     public float maxAlpha = 1f;
 
+    [Header("État")]
+    [SerializeField] private bool outlineEnabled = false;
+
     private Renderer[] renderers;
     private MaterialPropertyBlock propBlock;
     private Material[] cachedMaterials;
-    private bool isOutlineActive = false;
     private bool isHovering = false;
-
-    // Offset aléatoire pour que tous les objets ne pulsent pas en sync
     private float timeOffset;
 
     void Awake()
@@ -28,10 +25,9 @@ public class OutlineController : MonoBehaviour
         propBlock = new MaterialPropertyBlock();
         timeOffset = Random.Range(0f, Mathf.PI * 2f);
 
-        // Cache les matériaux UNE seule fois + active _EMISSION une seule fois
         var matList = new List<Material>();
         foreach (var r in renderers)
-            foreach (var mat in r.sharedMaterials) 
+            foreach (var mat in r.materials)
                 matList.Add(mat);
         cachedMaterials = matList.ToArray();
 
@@ -42,6 +38,11 @@ public class OutlineController : MonoBehaviour
     void OnEnable()
     {
         OutlinePulseManager.Register(this);
+
+        if (outlineEnabled)
+            SetEmissionDirect(outlineColor * maxAlpha);
+        else
+            SetEmissionDirect(Color.black);
     }
 
     void OnDisable()
@@ -50,16 +51,30 @@ public class OutlineController : MonoBehaviour
         SetEmissionDirect(Color.black);
     }
 
-    public void SetOutline(bool active)
+    /// <summary>
+    /// Toggle l'outline entre actif et inactif.
+    /// </summary>
+    public void ToggleOutline()
     {
-        isOutlineActive = active;
-        if (!active) SetEmissionDirect(Color.black);
+        outlineEnabled = !outlineEnabled;
+        SetOutline(outlineEnabled);
     }
 
-    // Appelé chaque frame par OutlinePulseManager — pas de coroutine individuelle
+    /// <summary>
+    /// Force l'outline à un état précis.
+    /// </summary>
+    public void SetOutline(bool active)
+    {
+        outlineEnabled = active;
+        if (active)
+            SetEmissionDirect(outlineColor * maxAlpha);
+        else
+            SetEmissionDirect(Color.black);
+    }
+
     public void Tick(float time)
     {
-        if (!isOutlineActive) return;
+        if (!outlineEnabled) return;
 
         if (isHovering)
         {
@@ -72,17 +87,9 @@ public class OutlineController : MonoBehaviour
         SetEmissionDirect(outlineColor * alpha);
     }
 
-    public void OnHoverEnter()
-    {
-        isHovering = true;
-    }
+    public void OnHoverEnter() { isHovering = true; }
+    public void OnHoverExit()  { isHovering = false; }
 
-    public void OnHoverExit()
-    {
-        isHovering = false;
-    }
-
-    // Interne — n'est appelé que depuis Tick() ou SetOutline()
     private void SetEmissionDirect(Color color)
     {
         foreach (var r in renderers)

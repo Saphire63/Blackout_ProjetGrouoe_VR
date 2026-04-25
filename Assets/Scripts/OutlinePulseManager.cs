@@ -27,14 +27,22 @@ public class OutlinePulseManager : MonoBehaviour
         _controllers.Remove(c);
     }
 
+    public static void ToggleAllOutlines()
+    {
+        for (int i = _controllers.Count - 1; i >= 0; i--)
+        {
+            if (_controllers[i] == null) { _controllers.RemoveAt(i); continue; }
+            _controllers[i].ToggleOutline();
+        }
+    }
+
     void Update()
     {
-        // float t = Time.time;
-        // // Une seule boucle pour TOUS les objets — pas N coroutines parallèles
-        // for (int i = _controllers.Count - 1; i >= 0; i--)
-        // {
-        //     if (_controllers[i] == null) { _controllers.RemoveAt(i); continue; }
-        //     _controllers[i].Tick(t);
-        // }
+        float t = Time.time;
+        for (int i = _controllers.Count - 1; i >= 0; i--)
+        {
+            if (_controllers[i] == null) { _controllers.RemoveAt(i); continue; }
+            _controllers[i].Tick(t);
+        }
     }
 }
