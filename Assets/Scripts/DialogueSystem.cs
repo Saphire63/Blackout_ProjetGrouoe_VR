@@ -9,7 +9,7 @@ public class DialogueSystem : MonoBehaviour
     public CanvasGroup canvasGroup;
 
     [Header("Paramètres VR")]
-    public float distanceFromCamera = 2.2f;
+    public float distanceFromCamera = 0.5f;
     public float verticalOffset = -0.4f;
     public float fadeSpeed = 2f;
     public float typewriterSpeed = 0.04f;   // secondes entre chaque caractère
