@@ -16,74 +16,61 @@ public class PowerOutage : MonoBehaviour
     [Header("Délai avant coupure")]
     public float delayBeforeOutage = 3.5f;
 
-    private bool powerIsOn = false; // false au départ — lumières éteintes
+    private bool powerIsOn = false;
+    private Coroutine activeSequence; // ← garde trace de la séquence en cours
 
     void Start()
     {
-        // Lumières éteintes dès le lancement
-        if (lightningLight) lightningLight.intensity = 0f;
-        SetHouseLights(false);
+        
+        SetHouseLights(false, 0f);
     }
 
     public void TriggerOutage()
     {
-        if (powerIsOn) StartCoroutine(OutageSequence());
+        if (!powerIsOn || activeSequence != null) return; // ← guard
+        activeSequence = StartCoroutine(OutageSequence());
     }
 
-    // Appelé par LightSwitch quand le joueur allume l'interrupteur
     public void TurnOnThenOutage()
     {
-        StartCoroutine(TurnOnThenOutageSequence());
+        if (activeSequence != null) return; // ← guard anti-doublon
+        activeSequence = StartCoroutine(TurnOnThenOutageSequence());
     }
 
     IEnumerator TurnOnThenOutageSequence()
     {
-        // Allumer brièvement
-        SetHouseLights(true);
+        SetHouseLights(true, normalIntensity);
         powerIsOn = true;
+
         yield return new WaitForSeconds(delayBeforeOutage);
 
-        // Lancer la pluie
-        if (audioSource != null && rainAmbience != null)
-        {
-            audioSource.clip = rainAmbience;
-            audioSource.loop = true;
-            audioSource.Play();
-        }
+        PlayLoopAudio(rainAmbience);
 
-        // Éclairs
-        yield return StartCoroutine(LightningFlash(3));
+        // LightningFlash sans StartCoroutine imbriqué — on yield directement
+        yield return LightningFlash(3);
 
-        // Coupure
-        SetHouseLights(false);
+        SetHouseLights(false, 0f);
         powerIsOn = false;
 
-        // Tonnerre
-        if (audioSource != null && thunderClap != null)
-            audioSource.PlayOneShot(thunderClap, 1f);
+        PlayOneShot(thunderClap);
 
-        // Notifier GameManager
+        activeSequence = null;
         GameManager.Instance.SetState(GameState.PowerOutage);
     }
 
     IEnumerator OutageSequence()
     {
-        if (audioSource != null && rainAmbience != null)
-        {
-            audioSource.clip = rainAmbience;
-            audioSource.loop = true;
-            audioSource.Play();
-        }
+        PlayLoopAudio(rainAmbience);
 
         yield return new WaitForSeconds(delayBeforeOutage);
-        yield return StartCoroutine(LightningFlash(3));
+        yield return LightningFlash(3);
 
-        SetHouseLights(false);
+        SetHouseLights(false, 0f);
         powerIsOn = false;
 
-        if (audioSource != null && thunderClap != null)
-            audioSource.PlayOneShot(thunderClap, 1f);
+        PlayOneShot(thunderClap);
 
+        activeSequence = null;
         GameManager.Instance.SetState(GameState.PowerOutage);
     }
 
@@ -91,60 +78,88 @@ public class PowerOutage : MonoBehaviour
     {
         for (int i = 0; i < flashCount; i++)
         {
-            SetHouseLightsIntensity(Random.Range(0.1f, 0.5f));
-            if (lightningLight) lightningLight.intensity = Random.Range(2f, 5f);
-            yield return new WaitForSeconds(Random.Range(0.05f, 0.15f));
+            float flickerIntensity = Random.Range(0.1f, 0.5f); // ← décommente ça
+            SetHouseLights(true, flickerIntensity);
+            if (lightningLight){
+                lightningLight.enabled = true;
+            }
+            yield return new WaitForSeconds(Random.Range(0.05f, 0.15f)); // ← et ça
 
-            SetHouseLightsIntensity(normalIntensity);
-            if (lightningLight) lightningLight.intensity = 0f;
+            SetHouseLights(true, normalIntensity);
+            if (lightningLight){ 
+                lightningLight.enabled = false;
+            }
+
             yield return new WaitForSeconds(Random.Range(0.05f, 0.2f));
         }
+        yield break;
     }
 
     public void RestorePower()
     {
-        StartCoroutine(PowerRestoreSequence());
+        if (activeSequence != null) StopCoroutine(activeSequence);
+        activeSequence = StartCoroutine(PowerRestoreSequence());
     }
 
     IEnumerator PowerRestoreSequence()
     {
+        // Scintillement de rétablissement
         for (int i = 0; i < 4; i++)
         {
-            SetHouseLights(true);
-            SetHouseLightsIntensity(Random.Range(0.3f, 0.8f));
+            SetHouseLights(true, Random.Range(0.3f, 0.8f));
             yield return new WaitForSeconds(Random.Range(0.1f, 0.3f));
-            SetHouseLights(false);
+            SetHouseLights(false, 0f);
             yield return new WaitForSeconds(Random.Range(0.1f, 0.2f));
         }
 
-        SetHouseLights(true);
-        SetHouseLightsIntensity(normalIntensity);
+        SetHouseLights(true, normalIntensity);
         powerIsOn = true;
 
-        // Arrêter la pluie
-        if (audioSource != null)
+        // // Fade out audio — en une seule boucle propre
+        // if (audioSource != null && audioSource.isPlaying)
+        // {
+        //     float startVolume = audioSource.volume;
+        //     float elapsed = 0f;
+        //     float fadeDuration = 2f;
+
+        //     while (elapsed < fadeDuration)
+        //     {
+        //         elapsed += Time.deltaTime;
+        //         audioSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / fadeDuration);
+        //         yield return null;
+        //     }
+
+        //     audioSource.Stop();
+        //     audioSource.volume = 1f;
+        // }
+
+        activeSequence = null;
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    // Un seul foreach au lieu de deux
+    private void SetHouseLights(bool on, float intensity)
+    {
+        foreach (var l in houseLights)
         {
-            float t = 0;
-            while (t < 1f)
-            {
-                t += Time.deltaTime * 0.5f;
-                audioSource.volume = Mathf.Lerp(1f, 0f, t);
-                yield return null;
-            }
-            audioSource.Stop();
-            audioSource.volume = 1f;
+            if (l == null) continue;
+            l.enabled = on;
+            l.intensity = intensity;
         }
     }
 
-    void SetHouseLights(bool on)
+    private void PlayLoopAudio(AudioClip clip)
     {
-        foreach (var l in houseLights)
-            if (l != null) l.enabled = on;
+        // if (audioSource == null || clip == null) return;
+        // audioSource.clip = clip;
+        // audioSource.loop = true;
+        // audioSource.Play();
     }
 
-    void SetHouseLightsIntensity(float intensity)
+    private void PlayOneShot(AudioClip clip)
     {
-        foreach (var l in houseLights)
-            if (l != null) l.intensity = intensity;
+        // if (audioSource == null || clip == null) return;
+        // audioSource.PlayOneShot(clip, 1f);
     }
 }

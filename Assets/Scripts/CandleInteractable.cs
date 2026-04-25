@@ -27,34 +27,36 @@ public class CandleInteractable : MonoBehaviour
     private Coroutine flickerCoroutine;
     private Coroutine extinguishCoroutine;
 
-    private UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable rayInteractable;
     private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grabInteractable;
 
     void Awake()
     {
         grabInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
-        rayInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
 
-        if (rayInteractable == null)
-            rayInteractable = gameObject.AddComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
+        if (grabInteractable != null)
+            grabInteractable.selectEntered.AddListener(OnGrab);
 
-        rayInteractable.selectEntered.AddListener(OnRaySelect);
-
+        // Éteindre au départ
         if (candleLight) candleLight.enabled = false;
         if (flameParticles) flameParticles.Stop();
     }
 
-    void OnRaySelect(SelectEnterEventArgs args)
+    // ─── Déclenché quand le joueur saisit la bougie ──────────
+    void OnGrab(SelectEnterEventArgs args)
     {
-        if (!isLit) LightCandle();
+        if (!isLit)
+            LightCandle();
     }
 
+    // ─── Allumage ────────────────────────────────────────────
     public void LightCandle()
     {
         if (isLit) return;
         isLit = true;
 
-        if (audioSource && lightMatchSound) audioSource.PlayOneShot(lightMatchSound);
+        if (audioSource && lightMatchSound)
+            audioSource.PlayOneShot(lightMatchSound);
+
         if (flameParticles) flameParticles.Play();
 
         if (candleLight)
@@ -83,12 +85,17 @@ public class CandleInteractable : MonoBehaviour
             GameManager.Instance.SetState(GameState.CandleLit);
     }
 
+    // ─── Extinction ──────────────────────────────────────────
     public void ExtinguishCandle()
     {
         if (!isLit) return;
         isLit = false;
 
-        if (flickerCoroutine != null) { StopCoroutine(flickerCoroutine); flickerCoroutine = null; }
+        if (flickerCoroutine != null)
+        {
+            StopCoroutine(flickerCoroutine);
+            flickerCoroutine = null;
+        }
 
         if (audioSource && extinguishSound)
         {
@@ -107,7 +114,8 @@ public class CandleInteractable : MonoBehaviour
         while (t < 1f)
         {
             t += Time.deltaTime * 4f;
-            if (candleLight) candleLight.intensity = Mathf.Lerp(startIntensity, 0f, t);
+            if (candleLight)
+                candleLight.intensity = Mathf.Lerp(startIntensity, 0f, t);
             yield return null;
         }
 
@@ -124,7 +132,8 @@ public class CandleInteractable : MonoBehaviour
         yield return new WaitForSeconds(delay);
 
         GameState s = GameManager.Instance.currentState;
-        if (isLit && (s == GameState.CandleLit || s == GameState.SearchingKeyRDC || s == GameState.SearchingKeyUpstairs))
+        if (isLit && (s == GameState.CandleLit || s == GameState.SearchingKeyRDC
+            || s == GameState.SearchingKeyUpstairs))
             ExtinguishCandle();
     }
 
