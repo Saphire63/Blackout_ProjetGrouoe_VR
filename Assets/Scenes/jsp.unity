@@ -11892,6 +11892,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 153982007679157697, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_MoveSpeed
+      value: 1.8
+      objectReference: {fileID: 0}
     - target: {fileID: 393207239731357619, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -11948,6 +11952,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1883230248363655243, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_EnableFarCasting
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2633365042866799530, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -11963,6 +11971,10 @@ PrefabInstance:
     - target: {fileID: 6480925242510836759, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_TurnSpeed
       value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8877177980677234388, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_EnableFarCasting
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -15979,13 +15991,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 453307768}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.9458777, y: -0.24913964, z: -0.13519299, w: 0.15801212}
+  m_LocalRotation: {x: 0.9554281, y: -0.26759177, z: -0.010892723, w: 0.12423016}
   m_LocalPosition: {x: 0.652, y: 2.05, z: 7.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 13.389, y: -159.89, z: -148.103}
+  m_LocalEulerAnglesHint: {x: 13.389, y: -174.851, z: -148.103}
 --- !u!1001 &455988363
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34740,7 +34752,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 876649153}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73cb1305025ad3e48bf26b8449fa09a2, type: 3}
   m_Name: 
@@ -50135,7 +50147,19 @@ MonoBehaviour:
       m_Calls: []
   m_SelectEntered:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1420296594}
+        m_TargetAssemblyTypeName: OutlineController, Assembly-CSharp
+        m_MethodName: set_enabled
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_SelectExited:
     m_PersistentCalls:
       m_Calls: []
@@ -50181,6 +50205,23 @@ MonoBehaviour:
   audioSource: {fileID: 879398763}
   lockedSound: {fileID: 8300000, guid: 55b99d21dae41c74ab09da5628b0476d, type: 3}
   openSound: {fileID: 8300000, guid: 1c01a1fc5ff90c248b46501e5ccd18f2, type: 3}
+--- !u!114 &1420296594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1420296584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e18f375e62f4ce34694330d9e2264a62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OutlineController
+  outlineColor: {r: 1, g: 0.75, b: 0.2, a: 1}
+  pulseSpeed: 1.5
+  minAlpha: 0.3
+  maxAlpha: 1
+  outlineEnabled: 1
 --- !u!21 &1421548041
 Material:
   serializedVersion: 8
@@ -57586,8 +57627,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueSystem
   dialogueText: {fileID: 2019704757}
   canvasGroup: {fileID: 456815324}
-  distanceFromCamera: 2.2
-  verticalOffset: -0.4
+  distanceFromCamera: 0.4
+  verticalOffset: 0
   fadeSpeed: 2
   typewriterSpeed: 0.04
 --- !u!114 &1659085784
@@ -57673,7 +57714,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 100.33333, y: 314.5}
-  m_SizeDelta: {x: 800, y: 200}
+  m_SizeDelta: {x: 400, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &1664246318
 PrefabInstance:
@@ -57920,6 +57961,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 321892a1751acfd4497efa2696e87fd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerOutage
+  targetOutline: {fileID: 483830999}
   houseLights:
   - {fileID: 2037721787}
   - {fileID: 423129357}
@@ -60812,7 +60854,19 @@ MonoBehaviour:
       m_Calls: []
   m_SelectEntered:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1767956279}
+        m_TargetAssemblyTypeName: OutlineController, Assembly-CSharp
+        m_MethodName: set_enabled
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_SelectExited:
     m_PersistentCalls:
       m_Calls: []
@@ -69093,8 +69147,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 28
-  m_fontSizeBase: 28
+  m_fontSize: 8
+  m_fontSizeBase: 8
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -71920,6 +71974,10 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5544174058450350802, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5666291664394432004, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -71992,6 +72050,14 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8952210660643646308, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952210660643646308, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8953426538608231375, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
@@ -72024,6 +72090,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8953426538608231375, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1420296588}
+    - targetCorrespondingSourceObject: {fileID: 8953426538608231375, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1420296594}
     - targetCorrespondingSourceObject: {fileID: 4049890509696558241, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2076554592}
@@ -72033,6 +72102,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4049890509696558241, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2076554596}
+    - targetCorrespondingSourceObject: {fileID: 4049890509696558241, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2076554601}
   m_SourcePrefab: {fileID: 100100000, guid: 0c447d68afe357744b28e7c773cd345b, type: 3}
 --- !u!4 &2076554588 stripped
 Transform:
@@ -72177,6 +72249,23 @@ MonoBehaviour:
   m_StartingInteractionStrengthFilters: []
   m_AutoFindParentInteractableInHierarchy: 0
   m_ParentInteractableObject: {fileID: 0}
+--- !u!114 &2076554601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2076554591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e18f375e62f4ce34694330d9e2264a62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OutlineController
+  outlineColor: {r: 1, g: 0.75, b: 0.2, a: 1}
+  pulseSpeed: 1.5
+  minAlpha: 0.3
+  maxAlpha: 1
+  outlineEnabled: 1
 --- !u!1001 &2080614070
 PrefabInstance:
   m_ObjectHideFlags: 0

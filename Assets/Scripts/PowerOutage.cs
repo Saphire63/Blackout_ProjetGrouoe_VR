@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class PowerOutage : MonoBehaviour
 {
+    [Header("Outline ciblé")]
+    [SerializeField] private OutlineController targetOutline;
+
     [Header("Lumières de la maison")]
     public Light[] houseLights;
     public Light lightningLight;
@@ -103,7 +106,11 @@ public class PowerOutage : MonoBehaviour
 
             yield return new WaitForSeconds(Random.Range(0.05f, 0.2f));
         }
-        OutlinePulseManager.ToggleAllOutlines();
+        if (targetOutline != null)
+        {
+            targetOutline.SetOutline(true);
+        }
+
     }
 
     public void RestorePower()

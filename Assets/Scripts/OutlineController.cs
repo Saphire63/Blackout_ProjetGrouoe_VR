@@ -51,14 +51,6 @@ public class OutlineController : MonoBehaviour
         SetEmissionDirect(Color.black);
     }
 
-    /// <summary>
-    /// Toggle l'outline entre actif et inactif.
-    /// </summary>
-    public void ToggleOutline()
-    {
-        outlineEnabled = !outlineEnabled;
-        SetOutline(outlineEnabled);
-    }
 
     /// <summary>
     /// Force l'outline à un état précis.

@@ -56,7 +56,7 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.PowerOutage:
-                EnableInteractables(true);  // ← bougie en surbrillance dès le noir
+                // EnableInteractables(true);  // ← bougie en surbrillance dès le noir
                 dialogueSystem.ShowDialogue("Quoi ?! Encore une coupure...", 3f, () => {
                     StartCoroutine(DelayedDialogue(
                         "Il me semblait avoir mis une bougie quelque part...", 2f, null));
@@ -66,7 +66,7 @@ public class GameManager : MonoBehaviour
             case GameState.CandleLit:
                 dialogueSystem.ShowDialogue(
                     "Il faut que j'aille rétablir le courant à la cave.", 3f, () => {
-                        EnableInteractables(true);  
+                        // EnableInteractables(true);  
                         StartCoroutine(DelayedDialogue(
                             "L'accès à la cave se fait par la cuisine.", 3f, null));
                     });
@@ -111,15 +111,15 @@ public class GameManager : MonoBehaviour
         dialogueSystem.ShowDialogue(text, 3f, onComplete);
     }
 
-    public void EnableInteractables(bool enable)
-    {
-        foreach (var obj in interactableObjects)
-        {
-            if (obj != null)
-            {
-                var outline = obj.GetComponent<OutlineController>();
-                if (outline != null) outline.SetOutline(enable);
-            }
-        }
-    }
+    // public void EnableInteractables(bool enable)
+    // {
+    //     foreach (var obj in interactableObjects)
+    //     {
+    //         if (obj != null)
+    //         {
+    //             var outline = obj.GetComponent<OutlineController>();
+    //             if (outline != null) outline.SetOutline(enable);
+    //         }
+    //     }
+    // }
 }

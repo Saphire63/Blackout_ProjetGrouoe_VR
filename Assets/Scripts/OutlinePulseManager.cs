@@ -27,14 +27,7 @@ public class OutlinePulseManager : MonoBehaviour
         _controllers.Remove(c);
     }
 
-    public static void ToggleAllOutlines()
-    {
-        for (int i = _controllers.Count - 1; i >= 0; i--)
-        {
-            if (_controllers[i] == null) { _controllers.RemoveAt(i); continue; }
-            _controllers[i].ToggleOutline();
-        }
-    }
+
 
     void Update()
     {
