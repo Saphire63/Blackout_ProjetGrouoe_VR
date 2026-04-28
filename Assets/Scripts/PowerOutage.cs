@@ -12,7 +12,8 @@ public class PowerOutage : MonoBehaviour
     public float normalIntensity = 1f;
 
     [Header("Audio")]
-    public AudioSource audioSource;
+    public AudioSource ambianceAudioSource;
+    public AudioSource sfxAudioSource;
     public AudioClip thunderClap;
     public AudioClip rainAmbience;
 
@@ -26,16 +27,19 @@ public class PowerOutage : MonoBehaviour
     {
         SetHouseLights(false, 0f);
 
-        // Précharge les deux clips en mémoire au démarrage
-        if (audioSource != null)
+        if (ambianceAudioSource != null)
         {
-            audioSource.playOnAwake = false;
+            ambianceAudioSource.playOnAwake = false;
             if (rainAmbience != null)
             {
-                audioSource.clip = rainAmbience;
+                ambianceAudioSource.clip = rainAmbience;
                 rainAmbience.LoadAudioData();
             }
         }
+
+        if (sfxAudioSource != null)
+            sfxAudioSource.playOnAwake = false;
+
         if (thunderClap != null)
             thunderClap.LoadAudioData();
     }
@@ -66,7 +70,6 @@ public class PowerOutage : MonoBehaviour
         SetHouseLights(false, 0f);
         powerIsOn = false;
 
-
         activeSequence = null;
         GameManager.Instance.SetState(GameState.PowerOutage);
     }
@@ -81,8 +84,6 @@ public class PowerOutage : MonoBehaviour
         SetHouseLights(false, 0f);
         powerIsOn = false;
 
-
-
         activeSequence = null;
         GameManager.Instance.SetState(GameState.PowerOutage);
     }
@@ -94,10 +95,10 @@ public class PowerOutage : MonoBehaviour
             float flickerIntensity = Random.Range(0.1f, 0.5f);
             SetHouseLights(true, flickerIntensity);
             if (lightningLight)
-            {
                 lightningLight.enabled = true;
-            }
+
             PlayOneShot(thunderClap, 3f);
+
             yield return new WaitForSeconds(Random.Range(0.05f, 0.15f));
 
             SetHouseLights(true, normalIntensity);
@@ -106,11 +107,9 @@ public class PowerOutage : MonoBehaviour
 
             yield return new WaitForSeconds(Random.Range(0.05f, 0.2f));
         }
-        if (targetOutline != null)
-        {
-            targetOutline.SetOutline(true);
-        }
 
+        if (targetOutline != null)
+            targetOutline.SetOutline(true);
     }
 
     public void RestorePower()
@@ -132,28 +131,26 @@ public class PowerOutage : MonoBehaviour
         SetHouseLights(true, normalIntensity);
         powerIsOn = true;
 
-        // Fade out audio
-        if (audioSource != null && audioSource.isPlaying)
+        // Fade out pluie
+        if (ambianceAudioSource != null && ambianceAudioSource.isPlaying)
         {
-            float startVolume = audioSource.volume;
+            float startVolume = ambianceAudioSource.volume;
             float elapsed = 0f;
             float fadeDuration = 2f;
 
             while (elapsed < fadeDuration)
             {
                 elapsed += Time.deltaTime;
-                audioSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / fadeDuration);
+                ambianceAudioSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / fadeDuration);
                 yield return null;
             }
 
-            audioSource.Stop();
-            audioSource.volume = 1f;
+            ambianceAudioSource.Stop();
+            ambianceAudioSource.volume = 1f;
         }
 
         activeSequence = null;
     }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private void SetHouseLights(bool on, float intensity)
     {
@@ -167,15 +164,15 @@ public class PowerOutage : MonoBehaviour
 
     private void PlayLoopAudio(AudioClip clip)
     {
-        if (audioSource == null || clip == null) return;
-        audioSource.clip = clip;
-        audioSource.loop = true;
-        audioSource.Play();
+        if (ambianceAudioSource == null || clip == null) return;
+        ambianceAudioSource.clip = clip;
+        ambianceAudioSource.loop = true;
+        ambianceAudioSource.Play();
     }
 
     private void PlayOneShot(AudioClip clip, float volume = 1f)
     {
-        if (audioSource == null || clip == null) return;
-        audioSource.PlayOneShot(clip, volume);
+        if (sfxAudioSource == null || clip == null) return;
+        sfxAudioSource.PlayOneShot(clip, volume);
     }
 }
