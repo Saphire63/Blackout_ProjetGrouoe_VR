@@ -38,7 +38,7 @@ public class BasementDoor : MonoBehaviour
             // Le joueur n'a pas encore trouvé la clé
             if (doorAudio && lockedSound) doorAudio.PlayOneShot(lockedSound);
             GameManager.Instance.dialogueSystem.ShowDialogue(
-                "C'est fermé... il me faut la clé du sous-sol.", 3f, null);
+                "C'est fermé... il me faut la clé du sous-sol. Elle doit être dans un des tiroirs du rez-de-chaussée.", 3f, null);
 
             if (GameManager.Instance.currentState == GameState.CandleLit)
                 GameManager.Instance.SetState(GameState.SearchingKeyRDC);

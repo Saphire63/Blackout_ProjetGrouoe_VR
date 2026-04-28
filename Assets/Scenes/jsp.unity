@@ -336,7 +336,7 @@ MonoBehaviour:
     movementType: 2
     intensity: 0.03
     duration: 1
-    dialogue: "Une porte qui grince... c'est le ven s\xFBrement "
+    dialogue: "Une porte qui grince... c'est le vent s\xFBrement "
   - eventName: Chute
     sound: {fileID: 8300000, guid: 3236067cd1c700c4fa95958d174f7f5d, type: 3}
     volume: 0.9
@@ -16847,7 +16847,7 @@ Transform:
   m_GameObject: {fileID: 453307768}
   serializedVersion: 2
   m_LocalRotation: {x: 0.9554281, y: -0.26759177, z: -0.010892723, w: 0.12423016}
-  m_LocalPosition: {x: 0.652, y: 2.05, z: 7.07}
+  m_LocalPosition: {x: 0.565, y: 1.82, z: 6.109}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

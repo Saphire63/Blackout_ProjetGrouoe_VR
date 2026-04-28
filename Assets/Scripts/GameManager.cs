@@ -73,7 +73,7 @@ public class GameManager : MonoBehaviour
 
             case GameState.SearchingKeyRDC:
                 dialogueSystem.ShowDialogue(
-                    "C'est fermé à clé... il me faut la clé du sous-sol.", 3f, null);
+                    "C'est fermé à clé... il me faut la clé du sous-sol. Elle doit être dans un des tiroirs du rez-de-chaussée.", 3f, null);
                 break;
 
             case GameState.SearchingKeyUpstairs:
