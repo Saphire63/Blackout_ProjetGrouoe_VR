@@ -15,7 +15,12 @@ public class DoorInteractable : MonoBehaviour
     public AudioClip lockedSound;
     public AudioClip openSound;
 
+    [Header("Dialogue première ouverture (optionnel)")]
+    public string firstOpenDialogue = "";
+    public float firstOpenDialogueDuration = 3f;
+
     private bool isOpen = false;
+    private bool firstOpenDialoguePlayed = false;
     private Quaternion closedRotation;
     private Quaternion openRotation;
     private Coroutine moveCoroutine;
@@ -26,23 +31,19 @@ public class DoorInteractable : MonoBehaviour
         closedRotation = doorPivot.localRotation;
         openRotation = Quaternion.Euler(doorPivot.localEulerAngles + new Vector3(0, openAngle, 0));
 
-        // Configuration de l'interactable
         var interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
         if (interactable != null)
         {
-            // On lie l'interaction à la fonction OnInteract (qui existe juste en dessous)
             interactable.selectEntered.AddListener(OnInteract);
         }
     }
-
-    // C'EST CETTE FONCTION QUE UNITY NE TROUVAIT PAS (OnRaySelect n'existe plus)
+    
     private void OnInteract(SelectEnterEventArgs args)
     {
         if (isLocked)
         {
             if (audioSource && lockedSound) audioSource.PlayOneShot(lockedSound);
             
-            // On affiche le dialogue via le GameManager
             if (GameManager.Instance != null && GameManager.Instance.dialogueSystem != null)
             {
                 GameManager.Instance.dialogueSystem.ShowDialogue("C'est fermé à clé... Je devrais examiner la serrure.", 3f, null);
@@ -51,6 +52,13 @@ public class DoorInteractable : MonoBehaviour
         else
         {
             if (audioSource && openSound) audioSource.PlayOneShot(openSound);
+
+            if (!firstOpenDialoguePlayed && !string.IsNullOrEmpty(firstOpenDialogue))
+            {
+                firstOpenDialoguePlayed = true;
+                GameManager.Instance.dialogueSystem.ShowDialogue(firstOpenDialogue, firstOpenDialogueDuration, null);
+            }
+
             ToggleDoor();
         }
     }

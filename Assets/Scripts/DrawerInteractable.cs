@@ -5,6 +5,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 /// <summary>
 /// Tiroir — interaction via Ray Interactor.
 /// Quand on l'ouvre, l'item caché (ex: la clé) apparaît avec sa surbrillance.
+/// Après X ouvertures sans trouver la clé, indique au joueur de chercher au 1er étage.
 ///
 /// SETUP dans Unity :
 ///  DrawerBody (ce script + XRSimpleInteractable sur la poignée enfant)
@@ -31,8 +32,16 @@ public class DrawerInteractable : MonoBehaviour
     public AudioClip closeSound;
 
     [Header("Item révélé à l'ouverture")]
-    [Tooltip("Objet caché dans le tiroir (ex: KeyItem). Sera activé + surbrillance à l'ouverture.")]
+    [Tooltip("Objet caché dans le tiroir (ex: KeyItem). Sera activé à l'ouverture.")]
     public GameObject hiddenItem;
+
+    [Header("Indice après X ouvertures")]
+    [Tooltip("Nombre d'ouvertures de tiroirs (tous confondus) avant d'afficher l'indice '1er étage'.")]
+    public int interactionsBeforeHint = 5;
+
+    // Compteur et flag partagés entre toutes les instances
+    private static int totalOpenings = 0;
+    private static bool hintShown = false;
 
     // ─── Privé ──────────────────────────────────────────────
     private bool isOpen = false;
@@ -45,7 +54,6 @@ public class DrawerInteractable : MonoBehaviour
         if (drawerTransform == null) drawerTransform = transform;
 
         closedLocalPos = drawerTransform.localPosition;
-        // Compense le scale du parent pour que slideDistance soit en mètres réels
         Vector3 scaledDirection = slideDirection.normalized;
         if (drawerTransform.parent != null)
         {
@@ -57,7 +65,7 @@ public class DrawerInteractable : MonoBehaviour
             );
         }
         openLocalPos = closedLocalPos + scaledDirection * slideDistance;
-        // La poignée peut être un enfant ou ce GameObject lui-même
+
         var handle = GetComponentInChildren<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
         if (handle != null)
         {
@@ -66,8 +74,11 @@ public class DrawerInteractable : MonoBehaviour
             handle.hoverExited.AddListener(OnHoverExit);
         }
 
-        // Cacher l'item au départ
         if (hiddenItem != null) hiddenItem.SetActive(false);
+
+        // Reset au démarrage de la scène
+        totalOpenings = 0;
+        hintShown = false;
     }
 
     // ─── Events Ray Interactor ───────────────────────────────
@@ -75,8 +86,29 @@ public class DrawerInteractable : MonoBehaviour
     void OnRaySelect(SelectEnterEventArgs args)
     {
         if (isAnimating) return;
-        if (isOpen) CloseDrawer();
-        else OpenDrawer();
+
+        if (isOpen)
+        {
+            CloseDrawer();
+        }
+        else
+        {
+            OpenDrawer();
+
+            // Comptage uniquement si on cherche encore la clé au RDC
+            if (!hintShown && hiddenItem == null &&
+                (GameManager.Instance.currentState == GameState.CandleLit ||
+                 GameManager.Instance.currentState == GameState.SearchingKeyRDC))
+            {
+                totalOpenings++;
+
+                if (totalOpenings >= interactionsBeforeHint)
+                {
+                    hintShown = true;
+                    GameManager.Instance.SetState(GameState.SearchingKeyUpstairs);
+                }
+            }
+        }
     }
 
     void OnHoverEnter(HoverEnterEventArgs args)
@@ -107,15 +139,14 @@ public class DrawerInteractable : MonoBehaviour
         isOpen = false;
         PlaySound(closeSound);
         StartCoroutine(SlideRoutine(closedLocalPos, null));
-    }   
+    }
 
-   void RevealItem()
+    void RevealItem()
     {
         if (hiddenItem == null) return;
 
         hiddenItem.SetActive(true);
 
-        // DÉSACTIVE L'INTERACTION DU TIROIR POUR LAISSER LA CLÉ LIBRE
         var drawerInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
         if (drawerInteractable != null) drawerInteractable.enabled = false;
 
@@ -133,7 +164,7 @@ public class DrawerInteractable : MonoBehaviour
         while (t < 1f)
         {
             t += Time.deltaTime * slideSpeed;
-            float ease = 1f - Mathf.Pow(1f - Mathf.Clamp01(t), 3f); // ease out cubic
+            float ease = 1f - Mathf.Pow(1f - Mathf.Clamp01(t), 3f);
             drawerTransform.localPosition = Vector3.Lerp(startPos, targetPos, ease);
             yield return null;
         }

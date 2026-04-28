@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class KeyItem : MonoBehaviour
 {
@@ -9,26 +10,23 @@ public class KeyItem : MonoBehaviour
     public AudioClip pickupSound;
 
     private bool isPickedUp = false;
-    private UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable interactable;
+    private XRGrabInteractable grabInteractable;
 
     void Awake()
     {
-        interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
-        if (interactable == null)
-            interactable = gameObject.AddComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
+        // On utilise XRGrabInteractable au lieu de XRSimpleInteractable
+        // pour que la clé soit vraiment tenue en main
+        grabInteractable = GetComponent<XRGrabInteractable>();
+        if (grabInteractable == null)
+            grabInteractable = gameObject.AddComponent<XRGrabInteractable>();
 
-        interactable.selectEntered.AddListener(OnRaySelect);
+        grabInteractable.selectEntered.AddListener(OnGrab);
     }
 
-    void OnRaySelect(SelectEnterEventArgs args)
+    void OnGrab(SelectEnterEventArgs args)
     {
         if (isPickedUp) return;
-        RecupererCle();
-    }
 
-    public void RecupererCle()
-    {
-        if (isPickedUp) return;
         isPickedUp = true;
 
         if (audioSource && pickupSound)
@@ -36,26 +34,18 @@ public class KeyItem : MonoBehaviour
 
         GameManager.Instance.SetState(GameState.HasKey);
 
-        // Animation : monte légèrement et rétrécit avant de disparaître
-        StartCoroutine(PickUpAnimation());
+        // On ne cache plus l'objet — le joueur la tient maintenant en main
     }
 
-    IEnumerator PickUpAnimation()
+    /// <summary>
+    /// Retourne true si la clé est en ce moment tenue par un interactor XR.
+    /// C'est ce que BasementDoor vérifiera.
+    /// </summary>
+    public bool IsHeld()
     {
-        Vector3 startPos = transform.position;
-        Vector3 startScale = transform.localScale;
-        float t = 0f;
-
-        while (t < 1f)
-        {
-            t += Time.deltaTime * 3f;
-            transform.position = Vector3.Lerp(startPos, startPos + Vector3.up * 0.1f, t);
-            transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
-            yield return null;
-        }
-
-        gameObject.SetActive(false);
+        return grabInteractable != null && grabInteractable.isSelected;
     }
 
+    // Gardé pour compatibilité si d'autres scripts l'utilisent encore
     public bool IsPickedUp() => isPickedUp;
 }

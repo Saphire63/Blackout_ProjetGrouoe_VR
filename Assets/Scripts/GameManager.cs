@@ -54,12 +54,11 @@ public class GameManager : MonoBehaviour
 
             case GameState.PowerOn:
                 break;
-
+                
             case GameState.PowerOutage:
-                // EnableInteractables(true);  // ← bougie en surbrillance dès le noir
                 dialogueSystem.ShowDialogue("Quoi ?! Encore une coupure...", 3f, () => {
-                    StartCoroutine(DelayedDialogue(
-                        "Il me semblait avoir mis une bougie quelque part...", 2f, null));
+                    dialogueSystem.ShowDialogue(
+                        "Il me semblait avoir mis une bougie quelque part...", 3f, null);
                 });
                 break;
 
