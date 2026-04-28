@@ -12,6 +12,9 @@ public class CandleInteractable : MonoBehaviour
     public AudioClip flameBurnLoop;
     public AudioClip extinguishSound;
 
+    [Header("Événements ambiants")]
+    public AmbientEvent ambientEvents;
+
     [Header("Lumière")]
     public float maxLightIntensity = 1.2f;
     public float lightFlickerSpeed = 8f;
@@ -29,6 +32,15 @@ public class CandleInteractable : MonoBehaviour
 
     private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grabInteractable;
 
+    // Textes aléatoires quand la bougie s'éteint
+    private string[] extinguishDialogues = new string[]
+    {
+        "La bougie... je dois la rallumer.",
+        "Zut, elle s'est éteinte...",
+        "Encore le noir... il faut que je la rallume.",
+        "Décidément, cette bougie ne tient pas.",
+    };
+
     void Awake()
     {
         grabInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
@@ -36,16 +48,18 @@ public class CandleInteractable : MonoBehaviour
         if (grabInteractable != null)
             grabInteractable.selectEntered.AddListener(OnGrab);
 
-        // Éteindre au départ
         if (candleLight) candleLight.enabled = false;
         if (flameParticles) flameParticles.Stop();
     }
 
-    // ─── Déclenché quand le joueur saisit la bougie ──────────
     void OnGrab(SelectEnterEventArgs args)
     {
         if (!isLit)
             LightCandle();
+
+        // Remplace outline.OnGrab() par outline.SetOutline(false)
+        var outline = GetComponent<OutlineController>();
+        if (outline != null) outline.SetOutline(false); // ← fix
     }
 
     // ─── Allumage ────────────────────────────────────────────
@@ -85,6 +99,7 @@ public class CandleInteractable : MonoBehaviour
             GameManager.Instance.SetState(GameState.CandleLit);
     }
 
+
     // ─── Extinction ──────────────────────────────────────────
     public void ExtinguishCandle()
     {
@@ -122,19 +137,32 @@ public class CandleInteractable : MonoBehaviour
         if (candleLight) candleLight.enabled = false;
         if (flameParticles) flameParticles.Stop();
 
-        GameManager.Instance.dialogueSystem.ShowDialogue(
-            "La bougie... je dois la rallumer.", 3f, null);
+        // Déclenche un événement ambiant aléatoire
+        if (ambientEvents != null)
+            ambientEvents.TriggerRandomEvent();
+
+        // Texte aléatoire à l'extinction
+        string dialogue = extinguishDialogues[Random.Range(0, extinguishDialogues.Length)];
+        GameManager.Instance.dialogueSystem.ShowDialogue(dialogue, 3f, null);
     }
 
     IEnumerator RandomExtinguishRoutine()
     {
-        float delay = Random.Range(minTimeBetweenExtinguish, maxTimeBetweenExtinguish);
-        yield return new WaitForSeconds(delay);
+        while (isLit)
+        {
+            float delay = Random.Range(minTimeBetweenExtinguish, maxTimeBetweenExtinguish);
+            yield return new WaitForSeconds(delay);
 
-        GameState s = GameManager.Instance.currentState;
-        if (isLit && (s == GameState.CandleLit || s == GameState.SearchingKeyRDC
-            || s == GameState.SearchingKeyUpstairs))
-            ExtinguishCandle();
+            if (!isLit) yield break;
+
+            GameState s = GameManager.Instance.currentState;
+            if (s == GameState.CandleLit || s == GameState.SearchingKeyRDC
+                || s == GameState.SearchingKeyUpstairs)
+            {
+                ExtinguishCandle();
+                yield break;
+            }
+        }
     }
 
     IEnumerator FlickerLight()
